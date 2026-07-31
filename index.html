@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="Private browser-to-browser transfer for messages, photos, video, audio, and any file using QR pairing and WebRTC." />
+  <title>QR Anything</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="QR Anything home">
+      <span class="brand-mark" aria-hidden="true">▦</span>
+      <span>
+        <strong>QR Anything</strong>
+        <small>Private device-to-device transfer</small>
+      </span>
+    </a>
+    <span id="secureBadge" class="badge">Local-first</span>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NO ACCOUNT • NO UPLOAD SERVER</p>
+        <h1>Send a message, photo, video, audio, or any file.</h1>
+        <p class="lede">Pair two devices with animated QR codes, then transfer directly through an encrypted WebRTC connection. A QR-only fallback handles small files when a peer connection is unavailable.</p>
+      </div>
+      <div class="hero-note">
+        <strong>Best results</strong>
+        <span>Use two modern phones or computers. Keep both pages open and screens awake.</span>
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="Transfer mode">
+      <button class="tab active" data-tab="send">Send</button>
+      <button class="tab" data-tab="receive">Receive</button>
+      <button class="tab" data-tab="qr-only">QR-only</button>
+      <button class="tab" data-tab="help">Help</button>
+    </nav>
+
+    <section id="send" class="panel active" aria-labelledby="send-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="step">DEVICE A</p>
+          <h2 id="send-heading">Choose what to send</h2>
+        </div>
+        <span class="pill">Any file type</span>
+      </div>
+
+      <label class="field-label" for="messageInput">Message (optional)</label>
+      <textarea id="messageInput" rows="4" placeholder="Type a message to send with your files…"></textarea>
+
+      <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Choose files">
+        <input id="fileInput" type="file" multiple hidden />
+        <div class="drop-icon" aria-hidden="true">↑</div>
+        <strong>Tap to choose files</strong>
+        <span>Photos, videos, audio, PDFs, ZIP files—anything your browser can read.</span>
+      </div>
+
+      <div id="selectedList" class="selected-list" aria-live="polite"></div>
+      <div class="summary-row">
+        <span id="sendSummary">Nothing selected yet</span>
+        <button id="clearSelectionBtn" class="link-button" type="button">Clear</button>
+      </div>
+
+      <button id="createOfferBtn" class="primary" type="button">Create sender pairing QR</button>
+
+      <div id="senderPairing" class="work-area hidden">
+        <div class="work-heading">
+          <div>
+            <p class="step">STEP 1 OF 2</p>
+            <h3>Let the receiving device scan this QR loop</h3>
+          </div>
+          <span id="senderFrameCounter" class="frame-counter">Frame 0 / 0</span>
+        </div>
+        <div id="senderQr" class="qr-box" aria-label="Animated sender pairing QR"></div>
+        <div class="slider-row">
+          <label for="senderSpeed">Animation speed</label>
+          <input id="senderSpeed" type="range" min="180" max="1000" value="360" step="20" />
+        </div>
+        <div class="button-row">
+          <button id="scanAnswerBtn" class="primary" type="button">Scan receiver answer</button>
+          <button id="copyOfferBtn" class="secondary" type="button">Copy pairing text</button>
+        </div>
+        <p id="senderStatus" class="status">Waiting for the receiver to scan…</p>
+      </div>
+
+      <div id="sendProgressCard" class="progress-card hidden">
+        <div class="progress-top">
+          <strong id="sendProgressTitle">Sending…</strong>
+          <span id="sendProgressPercent">0%</span>
+        </div>
+        <progress id="sendProgress" max="100" value="0"></progress>
+        <span id="sendProgressDetail">Preparing transfer</span>
+      </div>
+    </section>
+
+    <section id="receive" class="panel" aria-labelledby="receive-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="step">DEVICE B</p>
+          <h2 id="receive-heading">Receive from another device</h2>
+        </div>
+        <span class="pill">Camera required</span>
+      </div>
+
+      <ol class="instructions">
+        <li>Open <strong>Send</strong> on the other device and create its sender QR.</li>
+        <li>Scan that animated QR below.</li>
+        <li>Show the answer QR back to the sending device.</li>
+      </ol>
+
+      <button id="scanOfferBtn" class="primary" type="button">Scan sender QR</button>
+
+      <div id="receiverAnswer" class="work-area hidden">
+        <div class="work-heading">
+          <div>
+            <p class="step">STEP 2 OF 2</p>
+            <h3>Show this answer QR to the sending device</h3>
+          </div>
+          <span id="answerFrameCounter" class="frame-counter">Frame 0 / 0</span>
+        </div>
+        <div id="answerQr" class="qr-box" aria-label="Animated receiver answer QR"></div>
+        <div class="slider-row">
+          <label for="answerSpeed">Animation speed</label>
+          <input id="answerSpeed" type="range" min="180" max="1000" value="360" step="20" />
+        </div>
+        <button id="copyAnswerBtn" class="secondary full" type="button">Copy answer text</button>
+        <p id="receiverStatus" class="status">Waiting for the sender to scan the answer…</p>
+      </div>
+
+      <div id="receiveProgressCard" class="progress-card hidden">
+        <div class="progress-top">
+          <strong id="receiveProgressTitle">Receiving…</strong>
+          <span id="receiveProgressPercent">0%</span>
+        </div>
+        <progress id="receiveProgress" max="100" value="0"></progress>
+        <span id="receiveProgressDetail">Waiting for data</span>
+      </div>
+
+      <div id="receivedItems" class="received-items" aria-live="polite"></div>
+    </section>
+
+    <section id="qr-only" class="panel" aria-labelledby="qr-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="step">FALLBACK MODE</p>
+          <h2 id="qr-heading">Transfer entirely through animated QR codes</h2>
+        </div>
+        <span class="pill warning">Small files</span>
+      </div>
+      <p class="muted">This works without a peer connection, but QR scanning is slow. Use it for text or a file under 500 KB.</p>
+
+      <div class="two-column">
+        <div class="subpanel">
+          <h3>Create QR transfer</h3>
+          <label class="field-label" for="directMessage">Message</label>
+          <textarea id="directMessage" rows="4" placeholder="Type a message…"></textarea>
+          <label class="field-label" for="directFile">Or choose one small file</label>
+          <input id="directFile" class="file-control" type="file" />
+          <button id="createDirectBtn" class="primary full" type="button">Create QR loop</button>
+          <div id="directOutput" class="work-area hidden">
+            <span id="directFrameCounter" class="frame-counter centered">Frame 0 / 0</span>
+            <div id="directQr" class="qr-box"></div>
+            <div class="slider-row">
+              <label for="directSpeed">Animation speed</label>
+              <input id="directSpeed" type="range" min="180" max="1200" value="420" step="20" />
+            </div>
+          </div>
+        </div>
+
+        <div class="subpanel">
+          <h3>Scan QR transfer</h3>
+          <p class="muted">Keep scanning until every frame is collected.</p>
+          <button id="scanDirectBtn" class="primary full" type="button">Scan QR loop</button>
+          <div id="directScanProgress" class="mini-progress hidden">
+            <progress id="directProgress" max="100" value="0"></progress>
+            <span id="directProgressText">0 of 0 frames</span>
+          </div>
+          <div id="directReceived"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="help" class="panel" aria-labelledby="help-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="step">HOW IT WORKS</p>
+          <h2 id="help-heading">Private transfer without uploading your files</h2>
+        </div>
+      </div>
+      <div class="help-grid">
+        <article>
+          <span>1</span>
+          <h3>Pair</h3>
+          <p>The sender and receiver exchange connection details through animated QR codes.</p>
+        </article>
+        <article>
+          <span>2</span>
+          <h3>Connect</h3>
+          <p>WebRTC creates an encrypted browser-to-browser data channel. Files are not stored by this app.</p>
+        </article>
+        <article>
+          <span>3</span>
+          <h3>Transfer</h3>
+          <p>Messages and file bytes move directly between the two devices with live progress.</p>
+        </article>
+      </div>
+      <div class="notice">
+        <strong>Important limitation</strong>
+        <p>Very large transfers depend on browser memory, network conditions, and whether the devices can establish a peer connection. Same-Wi-Fi transfers are usually the easiest. QR-only mode is intentionally limited because video-sized data would require thousands of QR frames.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="scannerModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scannerTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="step">QR SCANNER</p>
+          <h2 id="scannerTitle">Scan animated QR</h2>
+        </div>
+        <button id="closeScannerBtn" class="icon-button" type="button" aria-label="Close scanner">×</button>
+      </div>
+      <div class="camera-wrap">
+        <video id="cameraVideo" playsinline muted></video>
+        <div class="scan-guide" aria-hidden="true"></div>
+      </div>
+      <div class="scan-stats">
+        <strong id="scanProgressText">Waiting for a QR frame…</strong>
+        <span id="scanHint">Point the camera at the animated QR code.</span>
+      </div>
+      <progress id="scanProgress" max="100" value="0"></progress>
+      <details class="paste-fallback">
+        <summary>Camera not working? Paste pairing text</summary>
+        <textarea id="pastePairingText" rows="5" placeholder="Paste copied pairing text here…"></textarea>
+        <button id="usePastedTextBtn" class="secondary full" type="button">Use pasted text</button>
+      </details>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="app-part1.js" defer></script>
+  <script src="app-part2.js" defer></script>
+</body>
+</html>
