@@ -1,5 +1,5 @@
-const CACHE = 'qr-anything-v4';
-const ASSETS = ['./', './index.html', './styles.css', './app-part1.js', './app-part2.js', './fixes.js', './transfer-fixes.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'qr-anything-v5';
+const ASSETS = ['./', './index.html', './styles.css', './app-part1.js', './app-part2.js', './fixes.js', './transfer-fixes.js', './scan-fix-v5.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
