@@ -8,7 +8,7 @@
   <title>QR Anything</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <header class="topbar">
@@ -27,11 +27,11 @@
       <div>
         <p class="eyebrow">NO ACCOUNT • NO UPLOAD SERVER</p>
         <h1>Send a message, photo, video, audio, or any file.</h1>
-        <p class="lede">Pair two devices with animated QR codes, then transfer directly through an encrypted WebRTC connection. A QR-only fallback handles small files when a peer connection is unavailable.</p>
+        <p class="lede">Pair two devices with animated QR codes, then transfer through an encrypted WebRTC connection. Wi-Fi is not required: cellular data and different networks are supported with an internet relay when a direct connection is blocked.</p>
       </div>
       <div class="hero-note">
         <strong>Best results</strong>
-        <span>Use two modern phones or computers. Keep both pages open and screens awake.</span>
+        <span>Open this site in Chrome, Samsung Internet, Edge, or Safari—not inside the GitHub app. Keep both pages open and screens awake.</span>
       </div>
     </section>
 
@@ -105,7 +105,7 @@
           <p class="step">DEVICE B</p>
           <h2 id="receive-heading">Receive from another device</h2>
         </div>
-        <span class="pill">Camera required</span>
+        <span class="pill">Camera or paste</span>
       </div>
 
       <ol class="instructions">
@@ -212,7 +212,7 @@
       </div>
       <div class="notice">
         <strong>Important limitation</strong>
-        <p>Very large transfers depend on browser memory, network conditions, and whether the devices can establish a peer connection. Same-Wi-Fi transfers are usually the easiest. QR-only mode is intentionally limited because video-sized data would require thousands of QR frames.</p>
+        <p>Very large transfers depend on browser memory and network conditions. The app can use cellular data, different Wi-Fi networks, or the same network. When a direct connection is blocked, an encrypted TURN relay carries the transfer. QR-only mode remains limited because video-sized data would require thousands of QR frames.</p>
       </div>
     </section>
   </main>
@@ -246,7 +246,8 @@
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app-part1.js" defer></script>
-  <script src="app-part2.js" defer></script>
+  <script src="app-part1.js?v=3" defer></script>
+  <script src="app-part2.js?v=3" defer></script>
+  <script src="fixes.js?v=3" defer></script>
 </body>
 </html>
