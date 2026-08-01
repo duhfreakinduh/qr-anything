@@ -1,0 +1,148 @@
+name: Repository health
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=0
+          while IFS= read -r -d '' file; do
+            found=1
+            echo "Checking $file"
+            node --check "$file"
+          done < <(find . -type f -name '*.js' \
+            -not -path './.git/*' \
+            -not -path './node_modules/*' \
+            -not -path './vendor/*' \
+            -not -path './dist/*' \
+            -not -path './build/*' -print0)
+          if [[ "$found" -eq 0 ]]; then
+            echo 'No JavaScript files found.'
+          fi
+
+      - name: Check Python syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m compileall -q \
+            -x '(^|/)(\.git|node_modules|vendor|dist|build)/' .
+
+      - name: Validate JSON and HTML references
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import sys
+          from collections import Counter
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import unquote, urlsplit
+
+          ROOT = Path('.').resolve()
+          SKIP_PARTS = {'.git', 'node_modules', 'vendor', 'dist', 'build'}
+          errors: list[str] = []
+
+          def project_files():
+              for path in ROOT.rglob('*'):
+                  if not path.is_file() or any(part in SKIP_PARTS for part in path.parts):
+                      continue
+                  yield path
+
+          for path in project_files():
+              if path.suffix.lower() not in {'.json', '.webmanifest'}:
+                  continue
+              try:
+                  json.loads(path.read_text(encoding='utf-8'))
+              except Exception as exc:
+                  errors.append(f'{path.relative_to(ROOT)}: invalid JSON ({exc})')
+
+          class ReferenceParser(HTMLParser):
+              def __init__(self) -> None:
+                  super().__init__(convert_charrefs=True)
+                  self.references: list[str] = []
+                  self.ids: list[str] = []
+
+              def handle_starttag(self, tag: str, attrs):
+                  attributes = dict(attrs)
+                  element_id = attributes.get('id')
+                  if element_id:
+                      self.ids.append(element_id)
+                  for key in ('src', 'href', 'poster'):
+                      value = attributes.get(key)
+                      if value:
+                          self.references.append(value.strip())
+
+          ignored_schemes = {'http', 'https', 'mailto', 'tel', 'data', 'blob', 'javascript'}
+          for html_path in (path for path in project_files() if path.suffix.lower() in {'.html', '.htm'}):
+              parser = ReferenceParser()
+              try:
+                  parser.feed(html_path.read_text(encoding='utf-8'))
+              except Exception as exc:
+                  errors.append(f'{html_path.relative_to(ROOT)}: HTML parse failed ({exc})')
+                  continue
+
+              duplicates = [name for name, count in Counter(parser.ids).items() if count > 1]
+              if duplicates:
+                  errors.append(
+                      f'{html_path.relative_to(ROOT)}: duplicate id values: {", ".join(sorted(duplicates))}'
+                  )
+
+              for raw in parser.references:
+                  if not raw or raw.startswith(('#', '//')) or '{' in raw or '}' in raw:
+                      continue
+                  parsed = urlsplit(raw)
+                  if parsed.scheme.lower() in ignored_schemes:
+                      continue
+                  clean = unquote(parsed.path)
+                  if not clean or clean == '/':
+                      continue
+                  target = ROOT / clean.lstrip('/') if clean.startswith('/') else html_path.parent / clean
+                  if not target.resolve().exists():
+                      errors.append(
+                          f'{html_path.relative_to(ROOT)}: missing local reference {raw!r}'
+                      )
+
+          if errors:
+              print('Repository health checks failed:', file=sys.stderr)
+              for error in errors:
+                  print(f' - {error}', file=sys.stderr)
+              raise SystemExit(1)
+
+          print('JSON and HTML reference checks passed.')
+          PY
+
+      - name: Run package checks when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f package.json ]]; then
+            echo 'No package.json found.'
+            exit 0
+          fi
+          if [[ -f package-lock.json ]]; then
+            npm ci --ignore-scripts
+          else
+            npm install --ignore-scripts --package-lock=false
+          fi
+          npm test --if-present
+          npm run build --if-present
