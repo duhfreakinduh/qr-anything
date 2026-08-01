@@ -13,6 +13,7 @@ const originalHandleIncomingMessage = handleIncomingMessage;
 state.receiveQueue = Promise.resolve();
 state.pendingDeliveryAck = null;
 state.connectionTimer = null;
+state.receiveFailed = false;
 
 function clearDeliveryAck(error) {
   const pending = state.pendingDeliveryAck;
@@ -84,16 +85,35 @@ async function processReceiverEvent(event) {
     let payload = null;
     try { payload = JSON.parse(event.data); } catch {}
 
+    if (payload?.t === 'manifest') state.receiveFailed = false;
+    if (state.receiveFailed) return;
+
+    if (payload?.t === 'file-end') {
+      const file = state.incoming?.currentFile;
+      if (!file || file.id !== payload.id) throw new Error('The file ending information did not match the active file.');
+      if (file.received !== file.size) {
+        throw new Error(`${file.name} was incomplete: received ${formatBytes(file.received)} of ${formatBytes(file.size)}.`);
+      }
+    }
+
     originalHandleIncomingMessage(event);
+
+    if (payload?.t === 'manifest' && state.incoming) {
+      state.incoming.transferId = payload.transferId || '';
+      state.incoming.expectedFiles = Array.isArray(payload.files) ? payload.files.length : 0;
+    }
 
     if (payload?.t === 'done') {
       const incoming = state.incoming;
       if (!incoming) throw new Error('The transfer ended before its manifest arrived.');
       if (incoming.currentFile) throw new Error(`The file ${incoming.currentFile.name} did not finish downloading.`);
+      if ((incoming.completedFiles || 0) !== (incoming.expectedFiles || 0)) {
+        throw new Error(`Expected ${incoming.expectedFiles || 0} files but completed ${incoming.completedFiles || 0}.`);
+      }
 
       const acknowledgement = {
         t: 'ack',
-        transferId: payload.transferId || '',
+        transferId: payload.transferId || incoming.transferId || '',
         receivedBytes: incoming.receivedBytes || 0,
         completedFiles: incoming.completedFiles || 0
       };
@@ -103,6 +123,7 @@ async function processReceiverEvent(event) {
     return;
   }
 
+  if (state.receiveFailed) return;
   const buffer = await normalizeBinaryData(event.data);
   if (!buffer) throw new Error('This browser returned an unsupported file-data format.');
   originalHandleIncomingMessage({ data: buffer });
@@ -157,11 +178,13 @@ setupDataChannel = function setupReliableDataChannel(channel, role) {
 
   if (role === 'receiver') {
     state.receiveQueue = Promise.resolve();
+    state.receiveFailed = false;
     channel.onmessage = event => {
       state.receiveQueue = state.receiveQueue
         .then(() => processReceiverEvent(event))
         .catch(error => {
           console.error(error);
+          state.receiveFailed = true;
           $('receiveProgressTitle').textContent = 'Transfer stopped';
           $('receiveProgressDetail').textContent = error.message;
           if (channel.readyState === 'open') {
