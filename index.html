@@ -8,7 +8,7 @@
   <title>QR Anything</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <header class="topbar">
@@ -27,11 +27,11 @@
       <div>
         <p class="eyebrow">NO ACCOUNT • NO UPLOAD SERVER</p>
         <h1>Send a message, photo, video, audio, or any file.</h1>
-        <p class="lede">Pair two devices with animated QR codes, then transfer through an encrypted WebRTC connection. The same Wi-Fi network is most reliable; different networks can work when an internet relay is available.</p>
+        <p class="lede">Pair two devices with animated QR codes, then transfer through an encrypted WebRTC connection. Wi-Fi is not required: cellular data and different networks are supported with an internet relay when a direct connection is blocked.</p>
       </div>
       <div class="hero-note">
         <strong>Best results</strong>
-        <span>Open this site in Chrome, Samsung Internet, Edge, or Safari—not inside the GitHub app. Keep both pages open and screens awake until both devices say delivery is confirmed.</span>
+        <span>Open this site in Chrome, Samsung Internet, Edge, or Safari—not inside the GitHub app. Keep both pages open and screens awake.</span>
       </div>
     </section>
 
@@ -207,12 +207,12 @@
         <article>
           <span>3</span>
           <h3>Transfer</h3>
-          <p>Messages and file bytes move directly between the two devices with live progress and receiver confirmation.</p>
+          <p>Messages and file bytes move directly between the two devices with live progress.</p>
         </article>
       </div>
       <div class="notice">
         <strong>Important limitation</strong>
-        <p>Very large transfers depend on browser memory and network conditions. Same-Wi-Fi transfers are the most reliable. Different networks require a working relay. QR-only mode remains available for text and files under 500 KB.</p>
+        <p>Very large transfers depend on browser memory and network conditions. The app can use cellular data, different Wi-Fi networks, or the same network. When a direct connection is blocked, an encrypted TURN relay carries the transfer. QR-only mode remains limited because video-sized data would require thousands of QR frames.</p>
       </div>
     </section>
   </main>
@@ -246,9 +246,10 @@
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="app-part1.js?v=4" defer></script>
-  <script src="app-part2.js?v=4" defer></script>
-  <script src="fixes.js?v=4" defer></script>
-  <script src="transfer-fixes.js?v=4" defer></script>
+  <script src="app-part1.js?v=5" defer></script>
+  <script src="app-part2.js?v=5" defer></script>
+  <script src="fixes.js?v=5" defer></script>
+  <script src="transfer-fixes.js?v=5" defer></script>
+  <script src="scan-fix-v5.js?v=5" defer></script>
 </body>
 </html>
