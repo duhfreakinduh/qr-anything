@@ -1,0 +1,46 @@
+'use strict';
+
+// QRCode.js creates both a canvas and an image element. The v5 readability
+// stylesheet accidentally forced both to display, which made iPhone Safari
+// show two QR codes stacked together. Keep exactly one renderer visible.
+
+(function fixDuplicateQrRenderer() {
+  const previousRender = QrAnimator.prototype.render;
+
+  function keepOneQrVisible(container) {
+    if (!container) return;
+    const holder = container.querySelector('.v5-qr-holder') || container;
+    const canvas = holder.querySelector('canvas');
+    const images = [...holder.querySelectorAll('img')];
+
+    if (canvas) {
+      canvas.style.setProperty('display', 'block', 'important');
+      canvas.style.setProperty('margin', '0', 'important');
+      images.forEach(image => image.style.setProperty('display', 'none', 'important'));
+      return;
+    }
+
+    images.forEach((image, index) => {
+      image.style.setProperty('display', index === 0 ? 'block' : 'none', 'important');
+      if (index === 0) image.style.setProperty('margin', '0', 'important');
+    });
+  }
+
+  QrAnimator.prototype.render = function renderSingleQr() {
+    previousRender.call(this);
+    keepOneQrVisible(this.container);
+  };
+
+  const style = document.createElement('style');
+  style.id = 'singleQrRendererStyles';
+  style.textContent = `
+    .v5-qr-holder { overflow: hidden; }
+    .v5-qr-holder canvas { display: block !important; margin: 0 !important; }
+    .v5-qr-holder img { display: none !important; }
+  `;
+  document.head.appendChild(style);
+
+  for (const id of ['senderQr', 'answerQr', 'directQr']) {
+    keepOneQrVisible(document.getElementById(id));
+  }
+})();
