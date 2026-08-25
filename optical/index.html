@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#080b09" />
+  <meta name="description" content="QR Anything Optical transfers files from one screen to another camera using fountain-coded animated QR frames. No payload network path, Bluetooth, or pairing required." />
+  <title>QR Anything — Optical Transfer</title>
+  <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css?v=10" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="../" class="brand"><span class="mark">▦</span><span><strong>QR ANYTHING</strong><small>OPTICAL TRANSFER</small></span></a>
+    <span class="airgap">SCREEN → CAMERA</span>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">NO WIFI • NO BLUETOOTH • NO PAYLOAD NETWORK</p>
+      <h1>Send the file through light.</h1>
+      <p>One phone flashes an endless stream of fountain-coded QR frames. The other phone points its camera at the screen and reconstructs the file. Missed frames and duplicates are expected.</p>
+      <div class="mode-row" role="tablist" aria-label="Optical transfer mode">
+        <button id="showSend" class="mode active" type="button">SEND / DISPLAY</button>
+        <button id="showReceive" class="mode" type="button">RECEIVE / CAMERA</button>
+      </div>
+    </section>
+
+    <section id="sendPanel" class="panel active">
+      <div class="panel-head">
+        <div><p class="eyebrow">TRANSMITTER</p><h2>Flash a file as QR fountain frames</h2></div>
+        <span class="chip">NO PAIRING</span>
+      </div>
+
+      <div class="controls-grid">
+        <label class="field"><span>Choose file</span><input id="sendFile" type="file" /></label>
+        <label class="field"><span>Speed profile</span>
+          <select id="speedProfile">
+            <option value="safe">Safe — 240 B @ 8 FPS</option>
+            <option value="standard" selected>Standard — 480 B @ 12 FPS</option>
+            <option value="fast">Fast — 800 B @ 15 FPS</option>
+            <option value="turbo">Turbo — 1100 B @ 18 FPS</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="startSend" class="primary" type="button">START OPTICAL STREAM</button>
+        <button id="stopSend" class="secondary" type="button" disabled>STOP</button>
+        <button id="fullScreenQr" class="secondary" type="button">FULLSCREEN QR</button>
+      </div>
+      <p id="sendStatus" class="status">Choose a file. Start with Standard mode for phone-to-phone testing.</p>
+
+      <div id="senderStage" class="sender-stage">
+        <canvas id="opticalQr" width="720" height="720" aria-label="Animated optical transfer QR code"></canvas>
+      </div>
+
+      <div class="meter"><div id="sendMeterFill"></div></div>
+      <div class="stats sender-stats">
+        <div><span>TX FPS</span><strong id="txFps">0</strong></div>
+        <div><span>FRAME</span><strong id="txFrame">0</strong></div>
+        <div><span>BLOCK LEN</span><strong id="txBlock">—</strong></div>
+        <div><span>BLOCKS K</span><strong id="txBlocks">—</strong></div>
+        <div><span>PAYLOAD</span><strong id="txPayload">—</strong></div>
+        <div><span>OPTICAL RATE</span><strong id="txRate">—</strong></div>
+      </div>
+      <p class="hint">Turn the sender screen brightness up. Keep the QR large. The stream never needs an acknowledgement—the receiver stops when it has enough information.</p>
+    </section>
+
+    <section id="receivePanel" class="panel">
+      <div class="panel-head">
+        <div><p class="eyebrow">RECEIVER</p><h2>Pull the file out of the camera feed</h2></div>
+        <span id="lockChip" class="chip idle">NO LOCK</span>
+      </div>
+
+      <div class="button-row">
+        <button id="startReceive" class="primary" type="button">START CAMERA</button>
+        <button id="stopReceive" class="secondary" type="button" disabled>STOP</button>
+        <button id="resetReceive" class="secondary" type="button">RESET</button>
+      </div>
+      <p id="receiveStatus" class="status">Point this phone at the sender's animated QR stream.</p>
+
+      <div class="camera-stage">
+        <video id="receiveVideo" autoplay muted playsinline webkit-playsinline></video>
+        <div class="scan-box" aria-hidden="true"></div>
+        <canvas id="scanCanvas" width="720" height="720" hidden></canvas>
+      </div>
+
+      <div class="meter"><div id="receiveMeterFill"></div></div>
+      <div class="stats">
+        <div><span>CAPTURE FPS</span><strong id="captureFps">0</strong></div>
+        <div><span>DECODE FPS</span><strong id="decodeFps">0</strong></div>
+        <div><span>LOCK</span><strong id="rxLock">—</strong></div>
+        <div><span>DROPPED</span><strong id="rxDropped">0</strong></div>
+        <div><span>GOODPUT</span><strong id="rxGoodput">0 KB/s</strong></div>
+        <div><span>ELAPSED</span><strong id="rxElapsed">0 s</strong></div>
+        <div><span>FRAMES NEW/DUP/BAD</span><strong id="rxFrames">0/0/0</strong></div>
+        <div><span>SESSION</span><strong id="rxSession">—</strong></div>
+        <div><span>BLOCK LEN</span><strong id="rxBlock">—</strong></div>
+        <div><span>PAYLOAD</span><strong id="rxPayload">—</strong></div>
+      </div>
+
+      <div id="receiveResult" class="result hidden">
+        <strong id="resultTitle">TRANSFER COMPLETE</strong>
+        <p id="resultDetail"></p>
+        <div id="resultPreview"></div>
+        <div class="button-row">
+          <a id="saveResult" class="primary action-link" download> SAVE FILE </a>
+          <button id="shareResult" class="secondary" type="button">SHARE FILE</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="notice">
+      <strong>How this differs from the regular transfer</strong>
+      <p>This optical mode does not use WebRTC, TURN, Wi-Fi, cellular data, Bluetooth, or a device-to-device network path for the file. The website must be loaded first, but once its assets are cached the payload itself travels only as visible QR light. Optical frames are not encrypted—another camera that can see the sender screen can capture them too.</p>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" crossorigin="anonymous"></script>
+  <script type="module" src="./app.js?v=10"></script>
+</body>
+</html>
