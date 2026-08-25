@@ -113,13 +113,19 @@
 
     <section class="notice">
       <strong>How this differs from the regular transfer</strong>
-      <p>This optical mode does not use WebRTC, TURN, Wi-Fi, cellular data, Bluetooth, or a device-to-device network path for the file. The website must be loaded first, but once its assets are cached the payload itself travels only as visible QR light. Optical frames are not encrypted—another camera that can see the sender screen can capture them too.</p>
+      <p>This optical mode does not use WebRTC, TURN, Wi-Fi, cellular data, Bluetooth, or a device-to-device network path for the file. Load this page on both phones first. After the page and decoder are loaded, the payload itself travels only as visible QR light. Optical frames are not encrypted—another camera that can see the sender screen can capture them too.</p>
     </section>
   </main>
 
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('../sw.js').then(registration => registration.update()).catch(() => {});
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" crossorigin="anonymous"></script>
   <script type="module" src="./app.js?v=10"></script>
 </body>
 </html>
