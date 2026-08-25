@@ -44,3 +44,13 @@
     keepOneQrVisible(document.getElementById(id));
   }
 })();
+
+// Load the v8 feature upgrade after all transfer/scanner compatibility layers.
+(function loadV8Upgrade() {
+  if (document.querySelector('script[data-qr-anything-v8]')) return;
+  const script = document.createElement('script');
+  script.src = './upgrade-v8.js?v=8';
+  script.async = false;
+  script.dataset.qrAnythingV8 = '1';
+  document.head.appendChild(script);
+})();
