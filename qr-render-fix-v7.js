@@ -45,14 +45,29 @@
   }
 })();
 
-// Load the v9 scanner reliability layer first, then the v8 feature upgrade.
+// Load the v9 scanner reliability layer first, then the v8 feature upgrade,
+// then expose the separate optical no-network transport.
 (function loadLatestUpgrades() {
-  function loadV8() {
-    if (document.querySelector('script[data-qr-anything-v8]')) return;
+  function loadOpticalLink() {
+    if (document.querySelector('script[data-qr-anything-optical]')) return;
     const script = document.createElement('script');
-    script.src = './upgrade-v8.js?v=9';
+    script.src = './optical-link-v10.js?v=10';
+    script.async = false;
+    script.dataset.qrAnythingOptical = '1';
+    document.head.appendChild(script);
+  }
+
+  function loadV8() {
+    if (document.querySelector('script[data-qr-anything-v8]')) {
+      loadOpticalLink();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = './upgrade-v8.js?v=10';
     script.async = false;
     script.dataset.qrAnythingV8 = '1';
+    script.onload = loadOpticalLink;
+    script.onerror = loadOpticalLink;
     document.head.appendChild(script);
   }
 
@@ -62,7 +77,7 @@
   }
 
   const scannerFix = document.createElement('script');
-  scannerFix.src = './scan-fix-v9.js?v=9';
+  scannerFix.src = './scan-fix-v9.js?v=10';
   scannerFix.async = false;
   scannerFix.dataset.qrAnythingV9 = '1';
   scannerFix.onload = loadV8;
