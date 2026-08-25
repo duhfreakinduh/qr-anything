@@ -1,9 +1,9 @@
-const CACHE = 'qr-anything-v10';
+const CACHE = 'qr-anything-v11';
 const ASSETS = [
   './', './index.html', './styles.css', './app-part1.js', './app-part2.js',
   './fixes.js', './transfer-fixes.js', './scan-fix-v5.js', './ios-fix-v6.js',
   './qr-render-fix-v7.js', './scan-fix-v9.js', './upgrade-v8.js', './optical-link-v10.js',
-  './manifest.webmanifest', './icon.svg',
+  './quick-pair-v11.js', './manifest.webmanifest', './icon.svg',
   './optical/', './optical/index.html', './optical/styles.css', './optical/app.js', './optical/core.js'
 ];
 
