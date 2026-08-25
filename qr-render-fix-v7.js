@@ -45,15 +45,29 @@
   }
 })();
 
-// Load the v9 scanner reliability layer first, then the v8 feature upgrade,
-// then expose the separate optical no-network transport.
+// Load scanner reliability, feature tools, optical transport, then the v11
+// simplified quick-pair interface. The proven transfer engine is unchanged.
 (function loadLatestUpgrades() {
-  function loadOpticalLink() {
-    if (document.querySelector('script[data-qr-anything-optical]')) return;
+  function loadQuickPair() {
+    if (document.querySelector('script[data-qr-anything-quick-pair]')) return;
     const script = document.createElement('script');
-    script.src = './optical-link-v10.js?v=10';
+    script.src = './quick-pair-v11.js?v=11';
+    script.async = false;
+    script.dataset.qrAnythingQuickPair = '1';
+    document.head.appendChild(script);
+  }
+
+  function loadOpticalLink() {
+    if (document.querySelector('script[data-qr-anything-optical]')) {
+      loadQuickPair();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = './optical-link-v10.js?v=11';
     script.async = false;
     script.dataset.qrAnythingOptical = '1';
+    script.onload = loadQuickPair;
+    script.onerror = loadQuickPair;
     document.head.appendChild(script);
   }
 
@@ -63,7 +77,7 @@
       return;
     }
     const script = document.createElement('script');
-    script.src = './upgrade-v8.js?v=10';
+    script.src = './upgrade-v8.js?v=11';
     script.async = false;
     script.dataset.qrAnythingV8 = '1';
     script.onload = loadOpticalLink;
@@ -77,7 +91,7 @@
   }
 
   const scannerFix = document.createElement('script');
-  scannerFix.src = './scan-fix-v9.js?v=10';
+  scannerFix.src = './scan-fix-v9.js?v=11';
   scannerFix.async = false;
   scannerFix.dataset.qrAnythingV9 = '1';
   scannerFix.onload = loadV8;
