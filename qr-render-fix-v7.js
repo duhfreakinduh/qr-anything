@@ -45,12 +45,27 @@
   }
 })();
 
-// Load the v8 feature upgrade after all transfer/scanner compatibility layers.
-(function loadV8Upgrade() {
-  if (document.querySelector('script[data-qr-anything-v8]')) return;
-  const script = document.createElement('script');
-  script.src = './upgrade-v8.js?v=8';
-  script.async = false;
-  script.dataset.qrAnythingV8 = '1';
-  document.head.appendChild(script);
+// Load the v9 scanner reliability layer first, then the v8 feature upgrade.
+(function loadLatestUpgrades() {
+  function loadV8() {
+    if (document.querySelector('script[data-qr-anything-v8]')) return;
+    const script = document.createElement('script');
+    script.src = './upgrade-v8.js?v=9';
+    script.async = false;
+    script.dataset.qrAnythingV8 = '1';
+    document.head.appendChild(script);
+  }
+
+  if (document.querySelector('script[data-qr-anything-v9]')) {
+    loadV8();
+    return;
+  }
+
+  const scannerFix = document.createElement('script');
+  scannerFix.src = './scan-fix-v9.js?v=9';
+  scannerFix.async = false;
+  scannerFix.dataset.qrAnythingV9 = '1';
+  scannerFix.onload = loadV8;
+  scannerFix.onerror = loadV8;
+  document.head.appendChild(scannerFix);
 })();
