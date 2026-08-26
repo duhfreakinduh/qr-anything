@@ -7,11 +7,11 @@
   <meta name="description" content="QR Anything Optical transfers files from one screen to another camera using fountain-coded animated QR frames. No payload network path, Bluetooth, or pairing required." />
   <title>QR Anything — Optical Transfer</title>
   <link rel="icon" href="../icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="./styles.css?v=10" />
+  <link rel="stylesheet" href="./styles.css?v=12" />
 </head>
 <body>
   <header class="topbar">
-    <a href="../" class="brand"><span class="mark">▦</span><span><strong>QR ANYTHING</strong><small>OPTICAL TRANSFER</small></span></a>
+    <a href="../?v=12" class="brand"><span class="mark">▦</span><span><strong>QR ANYTHING</strong><small>OPTICAL TRANSFER</small></span></a>
     <span class="airgap">SCREEN → CAMERA</span>
   </header>
 
@@ -123,9 +123,14 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('../sw.js').then(registration => registration.update()).catch(() => {});
     }
+    document.addEventListener('DOMContentLoaded', () => {
+      const mode = new URLSearchParams(location.search).get('mode');
+      if (mode === 'receive') document.getElementById('showReceive')?.click();
+      if (mode === 'send') document.getElementById('showSend')?.click();
+    });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" crossorigin="anonymous"></script>
-  <script type="module" src="./app.js?v=10"></script>
+  <script type="module" src="./app.js?v=12"></script>
 </body>
 </html>
