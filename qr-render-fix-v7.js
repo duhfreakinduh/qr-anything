@@ -45,15 +45,29 @@
   }
 })();
 
-// Load scanner reliability, feature tools, optical transport, then the v11
-// simplified quick-pair interface. The proven transfer engine is unchanged.
+// Load scanner reliability, feature tools, optical transport, quick pairing,
+// then the polished v12 product home. The proven transfer engines remain intact.
 (function loadLatestUpgrades() {
-  function loadQuickPair() {
-    if (document.querySelector('script[data-qr-anything-quick-pair]')) return;
+  function loadProductHome() {
+    if (document.querySelector('script[data-qr-anything-product-home]')) return;
     const script = document.createElement('script');
-    script.src = './quick-pair-v11.js?v=11';
+    script.src = './product-home-v12.js?v=12';
+    script.async = false;
+    script.dataset.qrAnythingProductHome = '1';
+    document.head.appendChild(script);
+  }
+
+  function loadQuickPair() {
+    if (document.querySelector('script[data-qr-anything-quick-pair]')) {
+      loadProductHome();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = './quick-pair-v11.js?v=12';
     script.async = false;
     script.dataset.qrAnythingQuickPair = '1';
+    script.onload = loadProductHome;
+    script.onerror = loadProductHome;
     document.head.appendChild(script);
   }
 
@@ -63,7 +77,7 @@
       return;
     }
     const script = document.createElement('script');
-    script.src = './optical-link-v10.js?v=11';
+    script.src = './optical-link-v10.js?v=12';
     script.async = false;
     script.dataset.qrAnythingOptical = '1';
     script.onload = loadQuickPair;
@@ -77,7 +91,7 @@
       return;
     }
     const script = document.createElement('script');
-    script.src = './upgrade-v8.js?v=11';
+    script.src = './upgrade-v8.js?v=12';
     script.async = false;
     script.dataset.qrAnythingV8 = '1';
     script.onload = loadOpticalLink;
@@ -91,7 +105,7 @@
   }
 
   const scannerFix = document.createElement('script');
-  scannerFix.src = './scan-fix-v9.js?v=11';
+  scannerFix.src = './scan-fix-v9.js?v=12';
   scannerFix.async = false;
   scannerFix.dataset.qrAnythingV9 = '1';
   scannerFix.onload = loadV8;
